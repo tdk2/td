@@ -35,7 +35,7 @@ def linearProbing(hashFunc, k, m, i):
 # h(k, i) = (h'(k) + c1*i + c2*i^2) mod m
 # c1 and c2 must be != 0
 def squareProbing(hashFunc, k, m, i, c1 = 0.5, c2 = 0.5):
-    return (hashFunc(k, m) + int(c1*i + c2*i*i)) % m
+    return (hashFunc(k, m) + int(round(c1*i + c2*i*i))) % m
 
 # h(k, i) = (h1(k) + i*h2(k)) mod m
 # Two auxiliary hash functions are used here
@@ -48,38 +48,40 @@ class OpenAddressHashTable:
    def __init__(self, m, HashFunction):
       self.m = m
       self.HashFunction = HashFunction
-      self.Table = [None]*m
-#	
+      self.__Table = [None]*m
+
+   def insert(self, key, value):
+      FoundIndex = -1
+      for i in xrange(self.m):
+         Index = self.HashFunction(key, self.m, i)
+         if  self.__Table[i] == None:
+            self.__Table[i] = (key, value)
+            return
+
+      raise Exception("Internal storage is full")
+
+   def findValue(self, key):
+      for i in xrange(self.m):
+         Index = self.HashFunction(key, self.m, i)
+         if self.__Table[Index] != None and self.__Table[Index][0] == key:
+            return self.__Table[Index][1]
+      return None
+
+   def printDebug(self):
+      print self.__Table
+
 
 if __name__=="__main__":
-    #funcs = [division_hash, multiply_hash]
-    #print map(lambda f: f(100, 12), funcs)
 
-    # uncomment the line below if you need obtain the same results each run
-    random.seed(2)
+   # uncomment the line below if you need obtain the same results each run
+   random.seed(2)
 
-    m = 64
-    p = 117
-    k = 3
-    ht = OpenAddressHashTable(m, squareProbing( getHashFunctionFromUniversalSet(p)))
-    #aux_hashs = [getHashFunctionFromUniversalSet(p) for x in xrange(2)]
-    #f = lambda k, m: ordinalHash(k, m, p, 3, 4)
-    f = getHashFunctionFromUniversalSet(p)
-    aux_hashs = [f, lambda k, m: 1 + (k % (m-1))]
-    myHash = lambda k, i: doubleHashProbing(aux_hashs, k, m, i)
-    #print [myHash(k, i) for i in xrange(0, m)]
-    print [0.5*i*i + 0.5*i for i in xrange(m)]
-    i, j = 0, 0
-    for x in xrange(m):
-        print i,
-        j = j+1
-        i = (i + j) % m
-           
-
-
-    
-    #print [f(k, m), f(k, m), myHash(k, 0), myHash(k, 0)]
-    #print doubleHashProbing([getHashFunctionFromUniversalSet(p) for x in xrange(2)], 8, m, 1)
-    #print squareProbing(getHashFunctionFromUniversalSet(p), 8, m, 1)
-    #print map(lambda k: multiplyHash(k, m), [61, 62, 63, 64, 65])
+   m = 16
+   p = 117
+   k = 3
+   hashFunc = getHashFunctionFromUniversalSet(p)
+   ht = OpenAddressHashTable(m, lambda k, _m, i: squareProbing( hashFunc, k, _m, i))
+   for i in xrange(m):
+      ht.insert(i**2, "vvv"+str(i))
+   print [ht.findValue(i**2) for i in xrange(m + 1)]
 
