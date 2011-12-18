@@ -8,18 +8,37 @@ def rollingHash(text, base=256):
 
 # returns hash of 'moved window'
 def nextRollingHash(prevHash, outChar, inChar):
-    return 0
+    return prevHash
+
+# returns the same value as math.pow(a, n) % q, but more efficiently
+def pow_by_mod(a, n, q):
+    result = 1
+    for x in xrange(n):
+        result = (result*a) % q
+    return result
 
 #finds all the occurances of pattern inside a given text 
 #and returns a list of corresponding indices
 def findSubstrRabinKarp(text, pattern, base=256, q=22111):
-    if len(text) < len(pattern):
+    n,m = len(text), len(pattern) 
+    if n < m:
         return []
-    if len(text) == len(pattern) and text == pattern:
+    if n == m and text == pattern:
         return [0]
 
- 
-    return []
+    p, t0, h = 0, 0, pow_by_mod(base, m-1, q)
+    retValue = []
+    for i in xrange(len(pattern)):
+        p = (base*p + ord(pattern[i])) % q
+        t0 = (base*t0 + ord(text[i])) % q
+    ts = t0
+
+    for s in xrange(n-m+1):
+        if p == ts and pattern == text[s:s+m]:
+            retValue.append(s)
+        if s < n-m:
+            ts = (base*(ts - ord(text[s])*h) + ord(text[s+m])) % q
+    return retValue
 
 # return a random charachers filled string of specified len
 def getRandomString(len):
@@ -30,13 +49,12 @@ def getRandomString(len):
 def testRollingHash():
     StringLen = 1000
     PatternLen = 12
-    testString = 'Hello world, this is me'
-    StringLen = len(testString)
-    #testString = getRandomString(StringLen)
+    testString = getRandomString(StringLen)
     #print testString[0:PatternLen]
     Hash = rollingHash(testString[0:PatternLen])
     for x in xrange(StringLen-PatternLen):
         Hash = nextRollingHash(Hash, testString[x], testString[x+PatternLen])
+        #print testString[x+1 : x+PatternLen+1]
         RealHash = rollingHash(testString[x+1 : x+PatternLen+1])
         if Hash != RealHash:
             print "The rolling hash is broken"
