@@ -31,6 +31,7 @@ class BSTree:
             self.__root = self.__createNode(key)
 
     
+    # remove an item corresponding to the key from the BST
     def remove(self, key):
         if key == None:
             # key cannot be a null
@@ -46,7 +47,8 @@ class BSTree:
         if left == None or right == None:
             y = node
         else:
-            y = self.__findSuccessor(node)
+            # either successor or predecessor will do here
+            y = self.__findPredecessor(node)
 
         #todo: check that y has at most one child
 
@@ -78,41 +80,54 @@ class BSTree:
         return self.__getKey(y)
 
 
+    #printing content of the bst in sorted order
     def inorderWalk(self):
+        print "<",
         self.__inorderWalk(self.__root)
+        #printing newline
+        print ">"
 
-    # private
+    # private section
+
+    # creating a new node, all the links are set to None
     def __createNode(self, key):
         return [key, None, None, None]
 
+    # aux util returning link to a child or parent or key
     def __getLink(self, node, linkIndex):
         if node != None:
             return node[linkIndex]
         else:
             return None
 
+    # get key of the node
     def __getKey(self, node):
         return self.__getLink(node, BSTree.__KeyIndex)
 
+    #
     def __getLeftChild(self, node):
         return self.__getLink(node, BSTree.__LeftChildIndex)
 
+    #
     def __getRightChild(self, node):
         return self.__getLink(node, BSTree.__RightChildIndex)
 
+    #
     def __getParent(self, node):
         return self.__getLink(node, BSTree.__ParentIndex)
 
+    # recursive algorithm printing sorted keys
     def __inorderWalk(self, root):
         if root != None:
             self.__inorderWalk(root[BSTree.__LeftChildIndex])
             print root[BSTree.__KeyIndex],
             self.__inorderWalk(root[BSTree.__RightChildIndex])
 
+    # TREE_SUCCESSOR
     def __findSuccessor(self, node):
         right =  self.__getRightChild(node)
         if right != None:
-            return self.findMinimumNode(right)
+            return self.__findMinimumNode(right)
 
         y = self.__getParent(node)
         x = node
@@ -120,10 +135,11 @@ class BSTree:
             x = y
             y = self.__getParent(y)
 
+    # TREE_PREDECESSOR
     def __findPredecessor(self, node):
         left =  self.__getLeftChild(node)
         if left != None:
-            return self.findMaximumNode(left)
+            return self.__findMaximumNode(left)
 
         y = self.__getParent(node)
         x = node
@@ -131,6 +147,7 @@ class BSTree:
             x = y
             y = self.__getParent(y)
 
+    # find the leftmost node in the tree specified by root
     def __findMinimumNode(self, root):
         left = self.__getLeftChild(root)
         if left != None:
@@ -138,10 +155,11 @@ class BSTree:
         else:
             return root
 
+    # find the rightmost node in the tree specified by root
     def __findMaximumNode(self, root):
         right = self.__getRightChild(root)
         if right != None:
-            return self.__findMaximumNode(left)
+            return self.__findMaximumNode(right)
         else:
             return root
 
@@ -167,7 +185,20 @@ class BSTree:
 
 
 if __name__=="__main__":
-    #lambda x, y: x > y
-    bst = BSTree([3, 1, 8, 2, 6, 7, 5])
+    bst = BSTree([3, 1, 8, 2, 6, 7, 5], lambda x, y: x > y)
+    bst.inorderWalk()
+    bst.remove(8)
+    bst.inorderWalk()
+    bst.remove(6)
+    bst.inorderWalk()
+    bst.remove(3)
+    bst.inorderWalk()
+    bst.remove(1)
+    bst.inorderWalk()
+    bst.remove(5)
+    bst.inorderWalk()
+    bst.remove(7)
+    bst.inorderWalk()
+    bst.remove(2)
     bst.inorderWalk()
 
