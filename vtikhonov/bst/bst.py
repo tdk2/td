@@ -31,7 +31,7 @@ class TreeElementHeightCollector:
             self.__max = max(self.__max, self.__current)
 
             # leaf node
-            if (item[BSTree.LeftChildIndex] == None and item[BSTree.RightChildIndex] == None):
+            if (item[BSTree.LeftChildIndex] == None or item[BSTree.RightChildIndex] == None):
                 self.__pathLenSum += self.__current
                 self.__number = self.__number+1
                 if self.__min == None:
@@ -40,11 +40,57 @@ class TreeElementHeightCollector:
 
         elif stage == 2:
             self.__current = self.__current - 1
-        elif stage == 3:
-            pass
 
     def getHeights(self):
         return {"max":self.__max, "min":self.__min, "avg":self.__pathLenSum/max(self.__number, 1)};
+
+# Verifies RBT properties
+class RBTreeCheck:
+    def __init__(self):
+        self.__properties = [True for x in xrange(5)]
+        self.__blacksNumber = None
+
+    def __call__(self, item, stage):
+        color = item[BSTree.ColorIndex]
+        if stage == 0:
+
+            # 4th rule check: a red node must contain only black children
+            if color == Color.Red:
+                children = [item[BSTree.LeftChildIndex], item[BSTree.RightChildIndex]]
+                colors = [item[BSTree.ColorIndex] for item in children if item != None]
+                if colors.count(Color.Red) > 0:
+                    self.__properties[3] = False
+
+        elif stage == 1:
+            #root node is checked against second property: the root must be black
+            if item[BSTree.ParentIndex] == None:
+                if color != Color.Black:
+                    self.__properties[1] = False
+
+            #regular node must be either black or red (1st rule)
+            if color != Color.Black and color != Color.Red:
+                self.__properties[0] = False
+
+            # leaf node
+            if (item[BSTree.LeftChildIndex] == None or item[BSTree.RightChildIndex] == None):
+                # calculate black nodes number
+                node = item
+                blacks = 0
+                while node != None:
+                    blacks += 1 if node[BSTree.ColorIndex] == Color.Black else 0
+                    node = node[BSTree.ParentIndex]
+
+                if self.__blacksNumber == None:
+                    self.__blacksNumber = blacks
+                if blacks != self.__blacksNumber:
+                    # 5th rule is violated
+                    self.__properties[4] = False
+
+        elif stage == 2:
+            pass
+
+    def success(self):
+        return self.__properties;
 
 # generic visitor
 class TreeElementVisitor:
@@ -54,6 +100,12 @@ class TreeElementVisitor:
     def __call__(self, item, stage):
         for visitor in self.__visitors :
             visitor(item, stage)
+
+
+class Color:
+    Red = 0
+    Black = 1
+
 
 #
 class BSTree:
@@ -76,7 +128,7 @@ class BSTree:
                 else:
                     x = self.__getRightChild(x)
 
-            appendedNode = self.__createNode(key)
+            appendedNode = self.__createNode(key, Color.Black)
             appendedNode[BSTree.ParentIndex] = y
             if self.__cmp(key, y[BSTree.KeyIndex]):
                 y[BSTree.LeftChildIndex] = appendedNode
@@ -84,7 +136,7 @@ class BSTree:
                 y[BSTree.RightChildIndex] = appendedNode
 
         else:
-            self.__root = self.__createNode(key)
+            self.__root = self.__createNode(key, Color.Black)
 
     
     # remove an item corresponding to the key from the BST
@@ -114,7 +166,7 @@ class BSTree:
             self.__transplant(node, y)
             y[BSTree.LeftChildIndex] = node[BSTree.LeftChildIndex]
             y[BSTree.LeftChildIndex][BSTree.ParentIndex] = y
-            pass
+
 
     #printing content of the bst in sorted order
     def printInorder(self):
@@ -131,11 +183,17 @@ class BSTree:
         self.__inorderWalk(self.__root, visitor)
         print "size: %d, heights: " % sizeCollector.getValue(), heightCollector.getHeights()
 
+    def checkRBT(self):
+        visitor = RBTreeCheck()
+        self.__inorderWalk(self.__root, visitor)
+        print "RBT consistency: ", visitor.success()
+
+
     # private section
 
     # creating a new node, all the links are set to None
-    def __createNode(self, key):
-        return [key, None, None, None]
+    def __createNode(self, key, color):
+        return [key, None, None, None, color]
 
     # aux util returning link to a child or parent or key
     def __getLink(self, node, linkIndex):
@@ -243,28 +301,29 @@ class BSTree:
             command(root, 1)
             self.__inorderWalk(root[BSTree.RightChildIndex], command)
             command(root, 2)
-        else:
-            command(root, 3)
 
     KeyIndex = 0
     LeftChildIndex = 1
     RightChildIndex = 2
     ParentIndex = 3
+    ColorIndex = 4
 
 if __name__=="__main__":
     #values = [3, 1, 8, 2, 6, 7, 5]
-
-        
-    MinPow = 6
-    MaxPow = 14
-    values = [utils.Random(0, 2**MaxPow) for x in xrange(2**MaxPow)]
-    for bstSize in xrange(MinPow, MaxPow+1):
-        #values = [utils.Random(0, 1000) for x in xrange(2**bstSize)]
-        range = values[0:2**bstSize]
-        bst = BSTree(range, lambda x, y: x < y)
-        bst.printStatistics()
-        for delItem in utils.RandomPermutation(range):
-            bst.remove(delItem)
-        bst.printInorder()
+    values = [3, 1]
+    bst = BSTree(values, lambda x, y: x < y)
+    bst.printStatistics()                                        
+    bst.checkRBT()    
+#---------------------------------------------------------------------
+#    MinPow = 6                                                       
+#    MaxPow = 14                                                      
+#    values = [utils.Random(0, 2**MaxPow) for x in xrange(2**MaxPow)] 
+#    for bstSize in xrange(MinPow, MaxPow+1):                         
+#        #values = [utils.Random(0, 1000) for x in xrange(2**bstSize)]
+#        range = values[0:2**bstSize]                                 
+#        bst = BSTree(range, lambda x, y: x < y)                      
+#        bst.printStatistics()                                        
+#        bst.checkRBT()                                               
+#---------------------------------------------------------------------
 
 
