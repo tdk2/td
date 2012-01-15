@@ -1,3 +1,6 @@
+import sys
+sys.path.append(sys.path[0] + '/../hash')
+import utils
 
 #
 class BSTree:
@@ -86,6 +89,9 @@ class BSTree:
         self.__inorderWalk(self.__root)
         #printing newline
         print ">"
+
+    def printStatistics(self):
+        pass
 
     # private section
 
@@ -183,22 +189,18 @@ class BSTree:
     __RightChildIndex = 2
     __ParentIndex = 3
 
-
 if __name__=="__main__":
-    bst = BSTree([3, 1, 8, 2, 6, 7, 5], lambda x, y: x > y)
+    #values = [3, 1, 8, 2, 6, 7, 5]
+    values = [utils.Random(0, 10) for x in xrange(100)]
+    
+    bst = BSTree([], lambda x, y: x > y)
+    for item in values :
+        bst.insert(item)
     bst.inorderWalk()
-    bst.remove(8)
-    bst.inorderWalk()
-    bst.remove(6)
-    bst.inorderWalk()
-    bst.remove(3)
-    bst.inorderWalk()
-    bst.remove(1)
-    bst.inorderWalk()
-    bst.remove(5)
-    bst.inorderWalk()
-    bst.remove(7)
-    bst.inorderWalk()
-    bst.remove(2)
-    bst.inorderWalk()
+
+    permutation = utils.random_permutation(values)
+    #print permutation
+    for item in permutation :
+        bst.remove(item)
+        #bst.inorderWalk()
 
