@@ -36,8 +36,7 @@ class TreeElementHeightCollector:
                 self.__number = self.__number+1
                 if self.__min == None:
                     self.__min = self.__max
-                else:
-                    self.__min = min(self.__min, self.__current)
+                self.__min = min(self.__min, self.__current)
 
         elif stage == 2:
             self.__current = self.__current - 1
@@ -259,10 +258,16 @@ class BSTree:
     ParentIndex = 3
 
 if __name__=="__main__":
-    #values = [3, 1, 8, 2, 6, 7, 5]
-    
+    values = [3, 1, 8, 2, 6, 7, 5]
+    bst = BSTree(values, lambda x, y: x < y)
+    bst.printInorder()
+    for item in utils.RandomPermutation(values):
+        bst.remove(item);
+        bst.printInorder()
+
+        
     MinPow = 6
-    MaxPow = 20
+    MaxPow = 14
     values = [utils.Random(0, 2**MaxPow) for x in xrange(2**MaxPow)]
     for bstSize in xrange(MinPow, MaxPow+1):
         #values = [utils.Random(0, 1000) for x in xrange(2**bstSize)]

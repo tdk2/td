@@ -4,7 +4,7 @@ import random
 def Random(p, r):
     return int(p + round(random.random()*(r-p)))
 
-def random_permutation(iterable, r=None):
+def RandomPermutation(iterable, r=None):
     "Random selection from itertools.permutations(iterable, r)"
     pool = tuple(iterable)
     r = len(pool) if r is None else r
