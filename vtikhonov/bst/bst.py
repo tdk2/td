@@ -31,7 +31,7 @@ class TreeElementHeightCollector:
             self.__max = max(self.__max, self.__current)
 
             # leaf node
-            if (item[BSTree.LeftChildIndex] == nil or item[BSTree.RightChildIndex] == nil):
+            if (item.Left == nil or item.Right == nil):
                 self.__pathLenSum += self.__current
                 self.__number = self.__number+1
                 if self.__min == None:
@@ -51,19 +51,19 @@ class RBTreeCheck:
         self.__blacksNumber = None
 
     def __call__(self, item, stage, nil):
-        color = item[BSTree.ColorIndex]
+        color = item.Color
         if stage == 0:
 
             # 4th rule check: a red node must contain only black children
             if color == Color.Red:
-                children = [item[BSTree.LeftChildIndex], item[BSTree.RightChildIndex]]
-                colors = [item[BSTree.ColorIndex] for item in children]
+                children = [item.Left, item.Right]
+                colors = [item.Color for item in children]
                 if colors.count(Color.Red) > 0:
                     self.__properties[3] = False
 
         elif stage == 1:
             #root node is checked against second property: the root must be black
-            if item[BSTree.ParentIndex] == nil:
+            if item.Parent == nil:
                 if color != Color.Black:
                     self.__properties[1] = False
 
@@ -72,13 +72,13 @@ class RBTreeCheck:
                 self.__properties[0] = False
 
             # leaf node
-            if (item[BSTree.LeftChildIndex] == nil or item[BSTree.RightChildIndex] == nil):
+            if (item.Left == nil or item.Right == nil):
                 # calculate black nodes number
                 node = item
                 blacks = 0
                 while node != nil:
-                    blacks += 1 if node[BSTree.ColorIndex] == Color.Black else 0
-                    node = node[BSTree.ParentIndex]
+                    blacks += 1 if node.Color == Color.Black else 0
+                    node = node.Parent
 
                 if self.__blacksNumber == None:
                     self.__blacksNumber = blacks
@@ -107,12 +107,21 @@ class Color:
     Black = 'Black'
 
 
+class BSTreeNode:
+    def __init__(self, key, color, nil):
+        self.Key = key
+        self.Color = color
+        self.Left = nil
+        self.Right = nil
+        self.Parent = nil
+
+
 #
 class BSTree:
     # initialize the bst by a list of elements
     def __init__(self, lst=[], cmp=lambda x, y: x < y):
         self.__cmp = cmp
-        self.__nil = [None, None, None, None, Color.Black]
+        self.__nil = BSTreeNode(None, Color.Black, None)
         self.__root = self.__nil
         for elem in lst:
             self.insert(elem)
@@ -124,17 +133,17 @@ class BSTree:
             x = self.__root
             while x != self.__nil:
                 y = x
-                if self.__cmp(key, x[BSTree.KeyIndex]):
-                    x = self.__getLeftChild(x)
+                if self.__cmp(key, x.Key):
+                    x = x.Left
                 else:
-                    x = self.__getRightChild(x)
+                    x = x.Right
 
             appendedNode = self.__createNode(key, Color.Black)
-            appendedNode[BSTree.ParentIndex] = y
-            if self.__cmp(key, y[BSTree.KeyIndex]):
-                y[BSTree.LeftChildIndex] = appendedNode
+            appendedNode.Parent = y
+            if self.__cmp(key, y.Key):
+                y.Left = appendedNode
             else:
-                y[BSTree.RightChildIndex] = appendedNode
+                y.Right = appendedNode
 
         else:
             self.__root = self.__createNode(key, Color.Black)
@@ -152,26 +161,25 @@ class BSTree:
             #nothing to do
             return
 
-        left, right = self.__getLeftChild(node), self.__getRightChild(node)
+        left, right = node.Left, node.Right
         if left == self.__nil:
             self.__transplant(node, right)
         elif right == self.__nil:
             self.__transplant(node, left)
         else:
             y = self.__findSuccessor(node)
-            if y[BSTree.ParentIndex] != node:
-                self.__transplant(y, y[BSTree.RightChildIndex])
-                y[BSTree.RightChildIndex] = node[BSTree.RightChildIndex]
-                y[BSTree.RightChildIndex][BSTree.ParentIndex] = y
+            if y.Parent != node:
+                self.__transplant(y, y.Right)
+                y.Right = node.Right
+                y.Right.Parent = y
 
             self.__transplant(node, y)
-            y[BSTree.LeftChildIndex] = node[BSTree.LeftChildIndex]
-            y[BSTree.LeftChildIndex][BSTree.ParentIndex] = y
+            y.Left = node.Left
+            y.Left.Parent = y
 
 
     #printing content of the bst in sorted order
     def printInorder(self):
-        #command = lambda root: return root[BSTree.KeyIndex]
         print "<",
         self.__inorderWalk(self.__root, self.__printItem)
         #printing newline
@@ -194,59 +202,53 @@ class BSTree:
 
     # creating a new node, all the links are set to None
     def __createNode(self, key, color):
-        return [key, self.__nil, self.__nil, self.__nil, color]
+        return BSTreeNode(key, color, self.__nil)
 
-    # aux util returning link to a child or parent or key
-    def __getLink(self, node, linkIndex):
-        if node != self.__nil:
-            return node[linkIndex]
+    # LEFT-ROTATE
+    def __leftRotate(self, x):
+        y = x.Right
+        x.Right = y.Left
+        if y.Left != self.__nil:
+            y.Left.Parent = x
+        y.Parent = x.Parent
+        # verify that y could be used instead of x (as in book)
+        if y.Parent == self.__nil:
+            self.__root = y
+        elif x.Parent.Left == x:
+            x.Parent.Left == y
         else:
-            return self.__nil
-
-    # get key of the node
-    def __getKey(self, node):
-        return self.__getLink(node, BSTree.KeyIndex)
-
-    #
-    def __getLeftChild(self, node):
-        return self.__getLink(node, BSTree.LeftChildIndex)
-
-    #
-    def __getRightChild(self, node):
-        return self.__getLink(node, BSTree.RightChildIndex)
-
-    #
-    def __getParent(self, node):
-        return self.__getLink(node, BSTree.ParentIndex)
+            x.Parent.Right == y
+        y.Left = x
+        x.Parent = y
 
  
     # TREE_SUCCESSOR
     def __findSuccessor(self, node):
-        right =  self.__getRightChild(node)
+        right =  node.Right
         if right != self.__nil:
             return self.__findMinimumNode(right)
 
-        y = self.__getParent(node)
+        y = node.Parent
         x = node
-        while y != self.__nil and x == self.__getRightChild(y):
+        while y != self.__nil and x == y.Right:
             x = y
-            y = self.__getParent(y)
+            y = y.Parent
 
     # TREE_PREDECESSOR
     def __findPredecessor(self, node):
-        left =  self.__getLeftChild(node)
+        left =  node.Left
         if left != self.__nil:
             return self.__findMaximumNode(left)
 
-        y = self.__getParent(node)
+        y = node.Parent
         x = node
-        while y != self.__nil and x == self.__getLeftChild(y):
+        while y != self.__nil and x == y.Left:
             x = y
-            y = self.__getParent(y)
+            y = y.Parent
 
     # find the leftmost node in the tree specified by root
     def __findMinimumNode(self, root):
-        left = self.__getLeftChild(root)
+        left = root.Left
         if left != self.__nil:
             return self.__findMinimumNode(left)
         else:
@@ -254,7 +256,7 @@ class BSTree:
 
     # find the rightmost node in the tree specified by root
     def __findMaximumNode(self, root):
-        right = self.__getRightChild(root)
+        right = root.Right
         if right != self.__nil:
             return self.__findMaximumNode(right)
         else:
@@ -263,51 +265,45 @@ class BSTree:
     # auxiliary algorithm that is used in deletion procedure
     # note: introduced in third edition of the book
     def __transplant(self, u, v):
-        uParent = self.__getParent(u)
+        uParent = u.Parent
         if uParent == self.__nil:
             self.__root = v
-        elif self.__getLeftChild(uParent) == u:
-            uParent[BSTree.LeftChildIndex] = v
+        elif uParent.Left == u:
+            uParent.Left = v
         else:
-            uParent[BSTree.RightChildIndex] = v
+            uParent.Right = v
         if v != self.__nil:
-            v[BSTree.ParentIndex] = uParent
+            v.Parent = uParent
 
     # returns node corresponding to the key if it exists in the tree with root 
     def __search(self, root, key):
         if root == self.__nil or key == self.__nil:
             return self.__nil
 
-        rootKey = self.__getKey(root)
-        if key == rootKey:
+        if key == root.Key:
             return root
-        if self.__cmp(key, rootKey):
+        if self.__cmp(key, root.Key):
             # recursive search in the left subree
-            return self.__search(self.__getLeftChild(root), key)
+            return self.__search(root.Left, key)
         else:
             # further search in right subreee
-            return self.__search(self.__getRightChild(root), key)
+            return self.__search(root.Right, key)
 
     # just printing an item
     def __printItem(self, item, stage, nil):
         if stage == 1:
-            print item[BSTree.KeyIndex],
+            print item.Key,
 
 
     # inorder walk
     def __inorderWalk(self, root, command):
         if root != self.__nil:
             command(root, 0, self.__nil)
-            self.__inorderWalk(root[BSTree.LeftChildIndex], command)
+            self.__inorderWalk(root.Left, command)
             command(root, 1, self.__nil)
-            self.__inorderWalk(root[BSTree.RightChildIndex], command)
+            self.__inorderWalk(root.Right, command)
             command(root, 2, self.__nil)
 
-    KeyIndex = 0
-    LeftChildIndex = 1
-    RightChildIndex = 2
-    ParentIndex = 3
-    ColorIndex = 4
 
 if __name__=="__main__":
     #values = [3, 1, 8, 2, 6, 7, 5]
