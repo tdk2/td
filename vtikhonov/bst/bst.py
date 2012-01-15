@@ -31,7 +31,7 @@ class TreeElementHeightCollector:
             self.__max = max(self.__max, self.__current)
 
             # leaf node
-            if (item[BSTree.LeftChildIndex] == None and item[BSTree.RightChildIndex]):
+            if (item[BSTree.LeftChildIndex] == None and item[BSTree.RightChildIndex] == None):
                 self.__pathLenSum += self.__current
                 self.__number = self.__number+1
                 if self.__min == None:
@@ -91,49 +91,30 @@ class BSTree:
     def remove(self, key):
         if key == None:
             # key cannot be a null
-            return None
+            return
         
         # try to find a node corresponding to the key
         node = self.__search(self.__root, key)
         if node == None:
             #nothing to do
-            return None
+            return
 
         left, right = self.__getLeftChild(node), self.__getRightChild(node)
-        if left == None or right == None:
-            y = node
+        if left == None:
+            self.__transplant(node, right)
+        elif right == None:
+            self.__transplant(node, left)
         else:
-            # either successor or predecessor will do here
-            y = self.__findPredecessor(node)
+            y = self.__findSuccessor(node)
+            if y[BSTree.ParentIndex] != node:
+                self.__transplant(y, y[BSTree.RightChildIndex])
+                y[BSTree.RightChildIndex] = node[BSTree.RightChildIndex]
+                y[BSTree.RightChildIndex][BSTree.ParentIndex] = y
 
-        #todo: check that y has at most one child
-
-        leftY, rightY = self.__getLeftChild(y), self.__getRightChild(y)
-        if leftY != None:
-            x = leftY
-        else:
-            x = rightY
-
-        if x != None:
-            x[BSTree.ParentIndex] = y[BSTree.ParentIndex]
-
-        if y[BSTree.ParentIndex] == None:
-            #y was the root
-            self.__root = x
-        else:
-            parentY = self.__getParent(y)
-            childIndex = BSTree.RightChildIndex
-            if y == self.__getLeftChild(parentY):
-                childIndex = BSTree.LeftChildIndex
-            #todo: verify that y is right child of parentY [consistency check]
-            elif y != self.__getRightChild(parentY):
-                    raise "Unexpected error"
-            parentY[childIndex] = x
-
-        if y != node:
-            node[BSTree.KeyIndex] = y[BSTree.KeyIndex]
-
-        return self.__getKey(y)
+            self.__transplant(node, y)
+            y[BSTree.LeftChildIndex] = node[BSTree.LeftChildIndex]
+            y[BSTree.LeftChildIndex][BSTree.ParentIndex] = y
+            pass
 
     #printing content of the bst in sorted order
     def printInorder(self):
@@ -220,6 +201,19 @@ class BSTree:
         else:
             return root
 
+    # auxiliary algorithm that is used in deletion procedure
+    # note: introduced in third edition of the book
+    def __transplant(self, u, v):
+        uParent = self.__getParent(u)
+        if uParent == None:
+            self.__root = v
+        elif self.__getLeftChild(uParent) == u:
+            uParent[BSTree.LeftChildIndex] = v
+        else:
+            uParent[BSTree.RightChildIndex] = v
+        if v != None:
+            v[BSTree.ParentIndex] = uParent
+
     # returns node corresponding to the key if it exists in the tree with root 
     def __search(self, root, key):
         if root == None or key == None:
@@ -258,12 +252,7 @@ class BSTree:
     ParentIndex = 3
 
 if __name__=="__main__":
-    values = [3, 1, 8, 2, 6, 7, 5]
-    bst = BSTree(values, lambda x, y: x < y)
-    bst.printInorder()
-    for item in utils.RandomPermutation(values):
-        bst.remove(item);
-        bst.printInorder()
+    #values = [3, 1, 8, 2, 6, 7, 5]
 
         
     MinPow = 6
@@ -271,6 +260,11 @@ if __name__=="__main__":
     values = [utils.Random(0, 2**MaxPow) for x in xrange(2**MaxPow)]
     for bstSize in xrange(MinPow, MaxPow+1):
         #values = [utils.Random(0, 1000) for x in xrange(2**bstSize)]
-        bst = BSTree(values[0:2**bstSize], lambda x, y: x < y)
+        range = values[0:2**bstSize]
+        bst = BSTree(range, lambda x, y: x < y)
         bst.printStatistics()
+        for delItem in utils.RandomPermutation(range):
+            bst.remove(delItem)
+        bst.printInorder()
+
 
