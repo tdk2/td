@@ -211,8 +211,7 @@ class BSTree:
         if y.Left != self.__nil:
             y.Left.Parent = x
         y.Parent = x.Parent
-        # verify that y could be used instead of x (as in book)
-        if y.Parent == self.__nil:
+        if x.Parent == self.__nil:
             self.__root = y
         elif x.Parent.Left == x:
             x.Parent.Left == y
@@ -221,6 +220,21 @@ class BSTree:
         y.Left = x
         x.Parent = y
 
+    # RIGHT-ROTATE
+    def __rightRotate(self, y):
+        x = y.Left
+        y.Left = x.Right
+        if x.Right != self.__nil:
+            x.Right.Parent = y
+        x.Parent = y.Parent
+        if y.Parent == self.__nil:
+            self.__root = x
+        elif y.Parent.Left == y:
+            y.Parent.Left == x
+        else:
+            y.Parent.Right == x
+        x.Right = y
+        y.Parent = x
  
     # TREE_SUCCESSOR
     def __findSuccessor(self, node):
