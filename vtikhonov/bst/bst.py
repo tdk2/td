@@ -128,25 +128,26 @@ class BSTree:
 
     # add an element to the bst
     def insert(self, key):
-        if self.__root != self.__nil:
-            y = self.__nil
-            x = self.__root
-            while x != self.__nil:
-                y = x
-                if self.__cmp(key, x.Key):
-                    x = x.Left
-                else:
-                    x = x.Right
-
-            appendedNode = self.__createNode(key, Color.Black)
-            appendedNode.Parent = y
-            if self.__cmp(key, y.Key):
-                y.Left = appendedNode
+        z = self.__createNode(key, Color.Red)
+        y = self.__nil
+        x = self.__root
+        while x != self.__nil:
+            y = x
+            if self.__cmp(key, x.Key):
+                x = x.Left
             else:
-                y.Right = appendedNode
+                x = x.Right
 
+        z.Parent = y
+        if y == self.__nil:
+            #z.Color = Color.Black
+            self.__root = z
+        elif self.__cmp(key, y.Key):
+            y.Left = z
         else:
-            self.__root = self.__createNode(key, Color.Black)
+            y.Right = z
+
+        self.__rbInsertFixup(z)
 
     
     # remove an item corresponding to the key from the BST
@@ -195,7 +196,11 @@ class BSTree:
     def checkRBT(self):
         visitor = RBTreeCheck()
         self.__inorderWalk(self.__root, visitor)
-        print "RBT consistency: ", visitor.success()
+        result = visitor.success()
+        #check if Rule3 is not violated
+        if self.__nil.Color != Color.Black:
+            result[2] = False
+        print "RBT consistency: ", result
 
 
     # private section
@@ -203,6 +208,41 @@ class BSTree:
     # creating a new node, all the links are set to None
     def __createNode(self, key, color):
         return BSTreeNode(key, color, self.__nil)
+
+    def __rbInsertFixup(self, z):
+        while z.Parent.Color == Color.Red:
+            if z.Parent == z.Parent.Parent.Left:
+                y = z.Parent.Parent.Right
+                if y.Color == Color.Red:
+                    z.Parent.Color = Color.Black
+                    y.Color = Color.Black
+                    z.Parent.Parent.Color = Color.Red
+                    z = z.Parent.Parent
+                else:
+                    if z == z.Parent.Right:
+                        z = z.Parent
+                        self.__leftRotate(z)
+                    z.Parent.Color = Color.Black
+                    z.Parent.Parent.Color = Color.Red
+                    self.__rightRotate(z.Parent.Parent)
+            else:
+                # the same, change left-right
+                y = z.Parent.Parent.Left
+                if y.Color == Color.Red:
+                    z.Parent.Color = Color.Black
+                    y.Color = Color.Black
+                    z.Parent.Parent.Color = Color.Red
+                    z = z.Parent.Parent
+                else:
+                    if z == z.Parent.Left:
+                        z = z.Parent
+                        self.__rightRotate(z)
+                    z.Parent.Color = Color.Black
+                    z.Parent.Parent.Color = Color.Red
+                    self.__leftRotate(z.Parent.Parent)
+
+        self.__root.Color = Color.Black
+
 
     # LEFT-ROTATE
     def __leftRotate(self, x):
@@ -321,24 +361,24 @@ class BSTree:
 
 if __name__=="__main__":
     #values = [3, 1, 8, 2, 6, 7, 5]
-    values = [3, 1, 8]
+    values = [3, 1, 8, 2, 6, 7, 5, 0, 10]
     bst = BSTree(values, lambda x, y: x < y)
     bst.printStatistics()                                        
     bst.checkRBT()    
 
-    MinPow = 6
-    MaxPow = 14
-    values = [utils.Random(0, 2**MaxPow) for x in xrange(2**MaxPow)]
-    for bstSize in xrange(MinPow, MaxPow+1):
-        #values = [utils.Random(0, 1000) for x in xrange(2**bstSize)]
-        range = values[0:2**bstSize]
-        bst = BSTree(range, lambda x, y: x < y)
-        bst.printStatistics()
-        bst.checkRBT()
-
-        permutation = utils.RandomPermutation(range)
-        for delItem in permutation[0:len(permutation)-10]:
-            bst.remove(delItem)
-        bst.printInorder()
-
+#   MinPow = 6
+#   MaxPow = 14
+#   values = [utils.Random(0, 2**MaxPow) for x in xrange(2**MaxPow)]
+#   for bstSize in xrange(MinPow, MaxPow+1):
+#       #values = [utils.Random(0, 1000) for x in xrange(2**bstSize)]
+#       range = values[0:2**bstSize]
+#       bst = BSTree(range, lambda x, y: x < y)
+#       bst.printStatistics()
+#       bst.checkRBT()
+#
+#       permutation = utils.RandomPermutation(range)
+#       for delItem in permutation[0:len(permutation)-10]:
+#           bst.remove(delItem)
+#       bst.printInorder()
+#
 
