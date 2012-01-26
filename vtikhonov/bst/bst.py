@@ -254,9 +254,9 @@ class BSTree:
         if x.Parent == self.__nil:
             self.__root = y
         elif x.Parent.Left == x:
-            x.Parent.Left == y
+            x.Parent.Left = y
         else:
-            x.Parent.Right == y
+            x.Parent.Right = y
         y.Left = x
         x.Parent = y
 
@@ -270,9 +270,9 @@ class BSTree:
         if y.Parent == self.__nil:
             self.__root = x
         elif y.Parent.Left == y:
-            y.Parent.Left == x
+            y.Parent.Left = x
         else:
-            y.Parent.Right == x
+            y.Parent.Right = x
         x.Right = y
         y.Parent = x
  
@@ -361,24 +361,25 @@ class BSTree:
 
 if __name__=="__main__":
     #values = [3, 1, 8, 2, 6, 7, 5]
-    values = [3, 1, 8, 2, 6, 7, 5, 0, 10]
-    bst = BSTree(values, lambda x, y: x < y)
-    bst.printStatistics()                                        
-    bst.checkRBT()    
+#    values = [1, 1, 1, 1, 1, 1, 1, 1]       
+#    bst = BSTree(values, lambda x, y: x < y)
+#    bst.printStatistics()                   
+#    bst.printInorder()                      
+#    bst.checkRBT()                          
 
-#   MinPow = 6
-#   MaxPow = 14
-#   values = [utils.Random(0, 2**MaxPow) for x in xrange(2**MaxPow)]
-#   for bstSize in xrange(MinPow, MaxPow+1):
-#       #values = [utils.Random(0, 1000) for x in xrange(2**bstSize)]
-#       range = values[0:2**bstSize]
-#       bst = BSTree(range, lambda x, y: x < y)
-#       bst.printStatistics()
-#       bst.checkRBT()
+    MinPow = 6
+    MaxPow = 20
+    values = [utils.Random(0, 2**MaxPow) for x in xrange(2**MaxPow)]
+    for bstSize in xrange(MinPow, MaxPow+1):
+        #values = [utils.Random(0, 1000) for x in xrange(2**bstSize)]
+        range = values[0:2**bstSize]
+        bst = BSTree(range, lambda x, y: x < y)
+        bst.printStatistics()
+        bst.checkRBT()
 #
 #       permutation = utils.RandomPermutation(range)
 #       for delItem in permutation[0:len(permutation)-10]:
 #           bst.remove(delItem)
 #       bst.printInorder()
-#
+
 
