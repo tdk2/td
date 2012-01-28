@@ -1,4 +1,5 @@
-#include "stdafx.h"
+#include <windows.h>
+#include <tchar.h>
 
 namespace al {
     void demo_hash_map();
@@ -16,7 +17,7 @@ int _tmain(int argc, _TCHAR* argv[])
     // al::nth_element_demo();
     // al::demo_hash_map();
     // al::rabin_karp_demo();
-    al::radix_demo();
+    // al::radix_demo();
     al::bst_demo();
     return 0;
 }

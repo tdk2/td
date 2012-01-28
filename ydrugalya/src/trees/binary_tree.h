@@ -140,27 +140,24 @@ namespace al
         }
 
         void transplant(node_ptr_type u, node_ptr_type v) {
-            if isNull( u->get_parent() ) {
-                // if u has no parent than it is root
-                // v must become root
+            if (isNull( u->get_parent() )) {
+                // if u has no parent than it is root v must become root
                 m_pRoot = v; 
-            } else if ( u->get_parent().get_left()  == u ) {
+            } else if ( u->get_parent()->get_left()  == u ) {
                 u->get_parent()->set_left(v);
                 // now parent of u has v as it's left child
-            } else if ( u->get_parent().get_right()  == u ) {
+            } else if ( u->get_parent()->get_right()  == u ) {
                 u->get_parent()->set_right(v);
                 // now parent of u has v as it's right child
             }
 
-            if ( !isNull(v) ) {
+            if ( ! isNull(v) ) {
                 v->set_parent( u->get_parent() );
                 // now v rooted in u's parent
             }
         }
-#if 0
 
-
-        void delete(node_ptr_type z) {
+        void deleteNode(node_ptr_type z) {
 
             if ( isNull( z->get_left() ) ) { // case a
                 transplant( z, z->get_right() );
@@ -171,19 +168,18 @@ namespace al
                 node_ptr_type y = tree_minimum( z->get_right() );
 
                 // case d predecessor is right child of z
-                if ( y->get_parent() == z ) {
-                     transplant( z, z->get_right() );
+                if ( y->get_parent() != z ) {
+                     transplant( y, y->get_right() );
 
-                     y->set_right( z->get_right() )
+                     y->set_right( z->get_right() );
                      y->get_right()->set_parent( y );
                 }
 
                 transplant( z, y );
                 y->set_left( z->get_left() );
-                y->get_left->set_parent( y );
+                y->get_left()->set_parent( y );
             }
         }
-#endif
 	private:
 		node_ptr_type m_pRoot;
 	};

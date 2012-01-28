@@ -35,14 +35,23 @@ void bst_demo() {
    node = tree.tree_predeñessor( tree.tree_maximum( tree.get_root() ) );
    std::cout << "tree tree_predeñessor (max) : " << node->get_data() << "\n";
 
-   std::cout << "inorder tree walk << ";
+   std::cout << "inorder tree walk";
    inorder_tree_walk( tree.get_root() );
 
-   std::cout << "\npreorder tree walk << ";
+   std::cout << "\npreorder tree walk ";
    preorder_tree_walk( tree.get_root() );
    
-   std::cout << "\npostorder tree walk << ";
+   std::cout << "\npostorder tree walk";
    postorder_tree_walk( tree.get_root() );
+
+
+   std::cout << "\ndelete node tree walk" << tree.get_root()->get_left()->get_data();
+
+   tree.deleteNode( tree.get_root()->get_left() );
+
+   std::cout << "inorder tree walk";
+   inorder_tree_walk( tree.get_root() );
+
 }
 
 
