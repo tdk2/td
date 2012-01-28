@@ -30,6 +30,14 @@ class TreeElementHeightCollector:
         elif stage == 1:
             self.__max = max(self.__max, self.__current)
 
+            #child-parent consistency check
+            if item.Left != nil and item.Left.Parent != item:
+               print "Left child has different parent!"
+            if item.Right != nil and item.Right.Parent != item:
+               print "Right child has different parent!"
+            if item.Parent != nil and item.Parent.Left != item and item.Parent.Right != item:
+               print "Parent has not the item as a child!"
+
             # leaf node
             if (item.Left == nil or item.Right == nil):
                 self.__pathLenSum += self.__current
@@ -326,8 +334,7 @@ class BSTree:
             uParent.Left = v
         else:
             uParent.Right = v
-        if v != self.__nil:
-            v.Parent = uParent
+        v.Parent = uParent
 
     # returns node corresponding to the key if it exists in the tree with root 
     def __search(self, root, key):
@@ -368,7 +375,7 @@ if __name__=="__main__":
 #    bst.checkRBT()                          
 
     MinPow = 6
-    MaxPow = 20
+    MaxPow = 12
     values = [utils.Random(0, 2**MaxPow) for x in xrange(2**MaxPow)]
     for bstSize in xrange(MinPow, MaxPow+1):
         #values = [utils.Random(0, 1000) for x in xrange(2**bstSize)]
@@ -376,10 +383,10 @@ if __name__=="__main__":
         bst = BSTree(range, lambda x, y: x < y)
         bst.printStatistics()
         bst.checkRBT()
-#
-#       permutation = utils.RandomPermutation(range)
-#       for delItem in permutation[0:len(permutation)-10]:
-#           bst.remove(delItem)
-#       bst.printInorder()
+
+        permutation = utils.RandomPermutation(range)
+        for delItem in permutation[0:len(permutation)-10]:
+            bst.remove(delItem)
+        bst.printInorder()
 
 
