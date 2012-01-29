@@ -201,7 +201,8 @@ class BSTree:
     #printing content of the bst in sorted order
     def printInorder(self):
         print "<",
-        self.__inorderWalk(self.__root, self.__printItem)
+        for item in self.__inorderWalkGeneration(self.__root):
+            print item.Key,
         #printing newline
         print ">"
 
@@ -409,11 +410,6 @@ class BSTree:
             # further search in right subreee
             return self.__search(root.Right, key)
 
-    # just printing an item
-    def __printItem(self, item, stage, nil):
-        if stage == 1:
-            print item.Key,
-
 
     # inorder walk
     def __inorderWalk(self, root, command):
@@ -424,6 +420,14 @@ class BSTree:
             self.__inorderWalk(root.Right, command)
             command(root, 2, self.__nil)
 
+    # inorder walk for generators
+    def __inorderWalkGeneration(self, root):
+        if root != self.__nil:
+            for item in self.__inorderWalkGeneration(root.Left):
+                yield item
+            yield root
+            for item in self.__inorderWalkGeneration(root.Right):
+                yield item
 
 if __name__=="__main__":
 #    values = [3, 1, 8, 2, 6, 7, 5]
@@ -446,5 +450,5 @@ if __name__=="__main__":
         for delItem in permutation[0:len(permutation)-10]:
             bst.remove(delItem)
         bst.checkRBT()
-
+        bst.printInorder()
 
