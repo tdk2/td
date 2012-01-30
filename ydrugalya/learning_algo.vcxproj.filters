@@ -40,6 +40,9 @@
     <ClInclude Include="src\search\substring.h">
       <Filter>search</Filter>
     </ClInclude>
+    <ClInclude Include="src\trees\rb_tree.h">
+      <Filter>treees</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\tests\bst_demo.cpp">
@@ -61,6 +64,9 @@
       <Filter>demo</Filter>
     </ClCompile>
     <ClCompile Include="src\learning_algo.cpp" />
+    <ClCompile Include="src\tests\rbt_demo.cpp">
+      <Filter>demo</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="sort">

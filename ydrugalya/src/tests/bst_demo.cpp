@@ -45,13 +45,19 @@ void bst_demo() {
    postorder_tree_walk( tree.get_root() );
 
 
-   std::cout << "\ndelete node tree walk" << tree.get_root()->get_left()->get_data();
+   std::cout << "\ndelete node " << tree.get_root()->get_left()->get_data();
 
    tree.deleteNode( tree.get_root()->get_left() );
 
-   std::cout << "inorder tree walk";
+   std::cout << "\ninorder tree walk ";
    inorder_tree_walk( tree.get_root() );
 
+
+   std::cout << "\nrigth rotate" <<  tree.get_root()->get_left()->get_left()->get_data() << " " << tree.get_root()->get_left()->get_data(); 
+   tree.rightRotate( tree.get_root()->get_left() );
+
+   std::cout << "\ninorder tree walk ";
+   inorder_tree_walk( tree.get_root() );
 }
 
 

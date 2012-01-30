@@ -22,6 +22,7 @@
     <ClInclude Include="src\sort\quick_sort.h" />
     <ClInclude Include="src\sort\radix_sort.h" />
     <ClInclude Include="src\trees\binary_tree.h" />
+    <ClInclude Include="src\trees\rb_tree.h" />
     <ClInclude Include="src\utils\logic_shims.h" />
     <ClInclude Include="src\utils\print_utils.h" />
   </ItemGroup>
@@ -33,6 +34,7 @@
     <ClCompile Include="src\tests\nth_element_demo.cpp" />
     <ClCompile Include="src\tests\rabin_karp_demo.cpp" />
     <ClCompile Include="src\tests\radix_demo.cpp" />
+    <ClCompile Include="src\tests\rbt_demo.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{1AE33EB4-CFA0-4784-8405-CAA87570C610}</ProjectGuid>
