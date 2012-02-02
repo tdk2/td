@@ -110,6 +110,7 @@ class TreeElementVisitor:
 class AVLTreeNode:
     def __init__(self, key, height = 0):
         self.Key = key
+        self.Height = height
         self.Left = None
         self.Right = None
         self.Parent = None
@@ -145,6 +146,13 @@ class AVLTree:
         else:
             y.Right = z
 
+        #updating height attributes
+        node = z.Parent
+        offset = 0
+        while node != None:
+            offset += 1
+            node.Height = max(node.Height, offset)
+            node = node.Parent
         self.__avlInsertFixup(z)
 
     
@@ -189,7 +197,7 @@ class AVLTree:
     def printInorder(self):
         print "<",
         for item in self.__inorderWalkGeneration(self.__root):
-            print item.Key,
+            print "%d:%d" % (item.Key, item.Height),
         #printing newline
         print ">"
 
@@ -215,12 +223,66 @@ class AVLTree:
 
 
     def __avlInsertFixup(self, z):
-       pass
+        #search for avl violation and fixit
+        if z.Parent == None or z.Parent.Parent == None:
+            return
+
+        node = z.Parent.Parent
+        while node != None:
+            childIdx, heightDiff = self.__avlHeightDifference(node)
+            if heightDiff > 2:
+                #exception
+                print "WAT?!!!"
+            if heightDiff > 1:
+                print "fixing", childIdx, heightDiff
+                if childIdx == 0:
+                    self.__rightRotate(node)
+                else:
+                    self.__leftRotate(node)
+                break
+            node = node.Parent
+
+    #return index of a child index (Left is 0, Right is 1) which height is longer than of its sibling
+    #also non-negative height difference is returned
+    #e.g. (0, 2) means avl height violation: the left height is bigger than right by two
+    def __avlHeightDifference(self, z):
+        if (z == None):
+            return (0, 0)
+        leftHeight, rightHeight = self.__getLeftHeight(z), self.__getRightHeight(z)
+        if leftHeight > rightHeight:
+            return (0, leftHeight - rightHeight)
+        else:
+            return (1, rightHeight - leftHeight)
+
+    def __getLeftHeight(self, z):
+        if z == None:
+            return -1
+        if z.Left == None:
+            return 0
+        else:
+            return z.Left.Height+1
+
+    def __getRightHeight(self, z):
+        if z == None:
+            return -1
+        if z.Right == None:
+            return 0
+        else:
+            return z.Right.Height+1
+
+    def __getNodeHeight(self, z):
+        if z != None:
+            return z.Height
+        else:
+            return -1
 
     # LEFT-ROTATE
     def __leftRotate(self, x):
         y = x.Right
         x.Right = y.Left
+        alfaHeight = self.__getNodeHeight(x.Left)
+        betaHeight = self.__getNodeHeight(y.Left)
+        gammaHeight = self.__getNodeHeight(y.Right)
         if y.Left != None:
             y.Left.Parent = x
         y.Parent = x.Parent
@@ -232,11 +294,17 @@ class AVLTree:
             x.Parent.Right = y
         y.Left = x
         x.Parent = y
+        x.Height = max(alfaHeight, betaHeight)+1
+        y.Height = max(x.Height, gammaHeight)+1
+        self.__recalculateHeightUp(y.Parent)
 
     # RIGHT-ROTATE
     def __rightRotate(self, y):
         x = y.Left
         y.Left = x.Right
+        alfaHeight = self.__getNodeHeight(x.Left)
+        betaHeight = self.__getNodeHeight(x.Right)
+        gammaHeight = self.__getNodeHeight(y.Right)
         if x.Right != None:
             x.Right.Parent = y
         x.Parent = y.Parent
@@ -248,7 +316,20 @@ class AVLTree:
             y.Parent.Right = x
         x.Right = y
         y.Parent = x
+        y.Height = max(betaHeight, gammaHeight)+1
+        x.Height = max(alfaHeight, y.Height)+1
+        self.__recalculateHeightUp(x.Parent)
  
+    # update heights up
+    def __recalculateHeightUp(self, node):
+        while node != None:
+            newNodeHeight = max(self.__getNodeHeight(node.Left), self.__getNodeHeight(node.Right))+1
+            if newNodeHeight != node.Height:
+                node.Height = newNodeHeight
+                node = node.Parent
+            else:
+                node = None
+
     # TREE_SUCCESSOR
     def __findSuccessor(self, node):
         right =  node.Right
@@ -336,9 +417,9 @@ class AVLTree:
 
 if __name__=="__main__":
     values = [3, 1, 8, 2, 6, 7, 5]
+    values = [3, 1, 8, 2, 6, 7]
     #values = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
     bst = AVLTree(values, lambda x, y: x < y)
-    #bst.remove(9)
     bst.printStatistics()
     bst.printInorder()
     bst.checkAVL()
