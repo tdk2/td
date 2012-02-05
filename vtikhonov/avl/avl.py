@@ -48,50 +48,16 @@ class TreeElementHeightCollector:
     def getHeights(self):
         return {"max":self.__max, "min":self.__min};
 
-# Verifies RBT properties
-class RBTreeCheck:
-    def __init__(self):
-        self.__properties = [True for x in xrange(5)]
-        self.__blacksNumber = None
-
+# Verifies AVL properties
+class AVLTreeCheck:
     def __call__(self, item, stage, nil):
-        color = item.Color
         if stage == 0:
+           height = item.Height
+           rightHeight = AVLTreeNode.getRightHeight(item)
+           leftHeight = AVLTreeNode.getLeftHeight(item)
+           if height != max(rightHeight, leftHeight) or (height - min(rightHeight, leftHeight)) > 1:
+               print "violation of AVL properties at node %d:%d, leftHeight %d, rightHeight %d" % (item.Key, item.Height, leftHeight, rightHeight) 
 
-            # 4th rule check: a red node must contain only black children
-            if color == Color.Red:
-                children = [item.Left, item.Right]
-                colors = [item.Color for item in children]
-                if colors.count(Color.Red) > 0:
-                    self.__properties[3] = False
-
-        elif stage == 1:
-            #root node is checked against second property: the root must be black
-            if item.Parent == nil:
-                if color != Color.Black:
-                    self.__properties[1] = False
-
-            #regular node must be either black or red (1st rule)
-            if color != Color.Black and color != Color.Red:
-                self.__properties[0] = False
-
-            # leaf node
-            if (item.Left == nil or item.Right == nil):
-                # calculate black nodes number
-                node = item
-                blacks = 0
-                while node != nil:
-                    blacks += 1 if node.Color == Color.Black else 0
-                    node = node.Parent
-
-                if self.__blacksNumber == None:
-                    self.__blacksNumber = blacks
-                if blacks != self.__blacksNumber:
-                    # 5th rule is violated
-                    self.__properties[4] = False
-
-        elif stage == 2:
-            pass
 
     def success(self):
         return self.__properties;
@@ -115,6 +81,30 @@ class AVLTreeNode:
         self.Right = None
         self.Parent = None
 
+    @staticmethod
+    def getLeftHeight(node):
+        if node == None:
+            return -1
+        if node.Left == None:
+            return 0
+        else:
+            return node.Left.Height+1
+
+    @staticmethod
+    def getRightHeight(node):
+        if node == None:
+            return -1
+        if node.Right == None:
+            return 0
+        else:
+            return node.Right.Height+1
+
+    @staticmethod
+    def getNodeHeight(node):
+        if node != None:
+            return node.Height
+        else:
+            return -1
 
 #
 class AVLTree:
@@ -147,12 +137,7 @@ class AVLTree:
             y.Right = z
 
         #updating height attributes
-        node = z.Parent
-        offset = 0
-        while node != None:
-            offset += 1
-            node.Height = max(node.Height, offset)
-            node = node.Parent
+        self.__recalculateHeightUp(z.Parent)
         self.__avlInsertFixup(z)
 
     
@@ -209,14 +194,8 @@ class AVLTree:
         print "size: %d, heights: " % sizeCollector.getValue(), heightCollector.getHeights()
 
     def checkAVL(self):
-        pass
-#       visitor = RBTreeCheck()
-#       self.__inorderWalk(self.__root, visitor)
-#       result = visitor.success()
-#       #check if Rule3 is not violated
-#       if None.Color != Color.Black:
-#           result[2] = False
-#       print "RBT consistency: ", result
+        visitor = AVLTreeCheck()
+        self.__inorderWalk(self.__root, visitor)
 
 
     # private section
@@ -229,60 +208,35 @@ class AVLTree:
 
         node = z.Parent.Parent
         while node != None:
-            childIdx, heightDiff = self.__avlHeightDifference(node)
-            if heightDiff > 2:
+            factor = self.__avlFactor(node)
+            if abs(factor) > 2:
                 #exception
                 print "WAT?!!!"
-            if heightDiff > 1:
-                print "fixing", childIdx, heightDiff
-                if childIdx == 0:
+            if abs(factor) > 1:
+                #print "fixing", factor
+                if factor > 0:
+                    if self.__avlFactor(node.Left) < 0:
+                       self.__leftRotate(node.Left)
                     self.__rightRotate(node)
                 else:
+                    if self.__avlFactor(node.Right) > 0:
+                       self.__rightRotate(node.Right)
                     self.__leftRotate(node)
                 break
             node = node.Parent
 
-    #return index of a child index (Left is 0, Right is 1) which height is longer than of its sibling
-    #also non-negative height difference is returned
-    #e.g. (0, 2) means avl height violation: the left height is bigger than right by two
-    def __avlHeightDifference(self, z):
+    #return difference between left and right heights
+    #e.g. -2 means right height is longer than left height by 2
+    def __avlFactor(self, z):
         if (z == None):
-            return (0, 0)
-        leftHeight, rightHeight = self.__getLeftHeight(z), self.__getRightHeight(z)
-        if leftHeight > rightHeight:
-            return (0, leftHeight - rightHeight)
-        else:
-            return (1, rightHeight - leftHeight)
-
-    def __getLeftHeight(self, z):
-        if z == None:
-            return -1
-        if z.Left == None:
             return 0
-        else:
-            return z.Left.Height+1
+        return  AVLTreeNode.getLeftHeight(z) - AVLTreeNode.getRightHeight(z)
 
-    def __getRightHeight(self, z):
-        if z == None:
-            return -1
-        if z.Right == None:
-            return 0
-        else:
-            return z.Right.Height+1
-
-    def __getNodeHeight(self, z):
-        if z != None:
-            return z.Height
-        else:
-            return -1
 
     # LEFT-ROTATE
     def __leftRotate(self, x):
         y = x.Right
         x.Right = y.Left
-        alfaHeight = self.__getNodeHeight(x.Left)
-        betaHeight = self.__getNodeHeight(y.Left)
-        gammaHeight = self.__getNodeHeight(y.Right)
         if y.Left != None:
             y.Left.Parent = x
         y.Parent = x.Parent
@@ -294,17 +248,12 @@ class AVLTree:
             x.Parent.Right = y
         y.Left = x
         x.Parent = y
-        x.Height = max(alfaHeight, betaHeight)+1
-        y.Height = max(x.Height, gammaHeight)+1
-        self.__recalculateHeightUp(y.Parent)
+        self.__recalculateHeightUp(x, 3)
 
     # RIGHT-ROTATE
     def __rightRotate(self, y):
         x = y.Left
         y.Left = x.Right
-        alfaHeight = self.__getNodeHeight(x.Left)
-        betaHeight = self.__getNodeHeight(x.Right)
-        gammaHeight = self.__getNodeHeight(y.Right)
         if x.Right != None:
             x.Right.Parent = y
         x.Parent = y.Parent
@@ -316,15 +265,14 @@ class AVLTree:
             y.Parent.Right = x
         x.Right = y
         y.Parent = x
-        y.Height = max(betaHeight, gammaHeight)+1
-        x.Height = max(alfaHeight, y.Height)+1
-        self.__recalculateHeightUp(x.Parent)
+        self.__recalculateHeightUp(y, 3)
  
     # update heights up
-    def __recalculateHeightUp(self, node):
+    def __recalculateHeightUp(self, node, forceMinUpdate = 1):
         while node != None:
-            newNodeHeight = max(self.__getNodeHeight(node.Left), self.__getNodeHeight(node.Right))+1
-            if newNodeHeight != node.Height:
+            newNodeHeight = max(AVLTreeNode.getNodeHeight(node.Left), AVLTreeNode.getNodeHeight(node.Right))+1
+            if newNodeHeight != node.Height or forceMinUpdate > 0:
+                forceMinUpdate -= 1
                 node.Height = newNodeHeight
                 node = node.Parent
             else:
@@ -416,25 +364,25 @@ class AVLTree:
                 yield item
 
 if __name__=="__main__":
-    values = [3, 1, 8, 2, 6, 7, 5]
-    values = [3, 1, 8, 2, 6, 7]
+    #values = [3, 1, 8, 2, 6, 7, 5]
+    #values = [1, 2, 3, 4, 5, 6, 7, 8]
     #values = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-    bst = AVLTree(values, lambda x, y: x < y)
-    bst.printStatistics()
-    bst.printInorder()
-    bst.checkAVL()
+    #bst = AVLTree(values, lambda x, y: x < y)
+    #bst.printStatistics()
+    #bst.printInorder()
+    #bst.checkAVL()
 
-#   MinPow = 6
-#   MaxPow = 12
-#   values = [utils.Random(0, 2**MaxPow) for x in xrange(2**MaxPow)]
-#   for bstSize in xrange(MinPow, MaxPow+1):
-#       range = values[0:2**bstSize]
-#       bst = AVLTree(range, lambda x, y: x < y)
-#       bst.printStatistics()
-#
+    MinPow = 6
+    MaxPow = 16
+    values = [utils.Random(0, 2**MaxPow) for x in xrange(2**MaxPow)]
+    for bstSize in xrange(MinPow, MaxPow+1):
+        range = values[0:2**bstSize]
+        bst = AVLTree(range, lambda x, y: x < y)
+        bst.printStatistics()
+
 #       permutation = utils.RandomPermutation(range)
 #       for delItem in permutation[0:len(permutation)-10]:
 #           bst.remove(delItem)
-#       bst.checkRBT()
-#       bst.printInorder()
+        bst.checkAVL()
+#        bst.printInorder()
 
