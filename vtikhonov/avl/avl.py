@@ -136,8 +136,6 @@ class AVLTree:
         else:
             y.Right = z
 
-        #updating height attributes
-        self.__recalculateHeightUp(z.Parent)
         self.__avlInsertFixup(z)
 
     
@@ -153,19 +151,25 @@ class AVLTree:
             #nothing to do
             return
 
+        #print "removing %d:%d" % (node.Key, node.Height)
         if node.Left == None:
             x = node.Right
+            z = node.Parent
             self.__transplant(node, x)
         elif node.Right == None:
             x = node.Left
+            z = node.Parent
             self.__transplant(node, x)
         else:
             y = self.__findSuccessor(node)
             x = y.Right
             if y.Parent == node:
                 #the line below forces child-parent consistency even if y.Right is sentinel 
-                x.Parent = y
+                #x.Parent = y
+                z = y
+                pass
             else:
+                z = y.Parent
                 self.__transplant(y, y.Right)
                 y.Right = node.Right
                 y.Right.Parent = y
@@ -174,6 +178,8 @@ class AVLTree:
             y.Left = node.Left
             y.Left.Parent = y
 
+        #updating height attributes
+        self.__avlDeleteFixup(z)
         #if yColor == Color.Black:
         #    self.__rbDeleteFixup(x)
 
@@ -202,6 +208,9 @@ class AVLTree:
 
 
     def __avlInsertFixup(self, z):
+        #updating height attributes
+        self.__recalculateHeightUp(z.Parent)
+
         #search for avl violation and fixit
         if z.Parent == None or z.Parent.Parent == None:
             return
@@ -224,6 +233,34 @@ class AVLTree:
                     self.__leftRotate(node)
                 break
             node = node.Parent
+
+    def __avlDeleteFixup(self, z):
+        if z == None:
+            z = self.__root
+        #print "%d:%d" % (z.Key, z.Height)
+        self.__recalculateHeightUp(z, 1000)
+        node = z
+        while node != None:
+            factor = self.__avlFactor(node)
+            if abs(factor) > 2:
+                #exception
+                print "WAT?!!!"
+            if abs(factor) > 1:
+                #print "fixing", factor
+                nextNode = node.Parent
+                if factor > 0:
+                    if self.__avlFactor(node.Left) < 0:
+                       self.__leftRotate(node.Left)
+                    self.__rightRotate(node)
+                else:
+                    if self.__avlFactor(node.Right) > 0:
+                       self.__rightRotate(node.Right)
+                    self.__leftRotate(node)
+                node = nextNode
+            else:
+                #print node.Key, node.Parent.Key
+                node = node.Parent
+
 
     #return difference between left and right heights
     #e.g. -2 means right height is longer than left height by 2
@@ -328,7 +365,8 @@ class AVLTree:
             uParent.Left = v
         else:
             uParent.Right = v
-        v.Parent = uParent
+        if v != None:
+            v.Parent = uParent
 
     # returns node corresponding to the key if it exists in the tree with root 
     def __search(self, root, key):
@@ -363,15 +401,19 @@ class AVLTree:
             for item in self.__inorderWalkGeneration(root.Right):
                 yield item
 
-if __name__=="__main__":
+def testSingle():
     #values = [3, 1, 8, 2, 6, 7, 5]
-    #values = [1, 2, 3, 4, 5, 6, 7, 8]
+    #values = [9, 5, 6, 6, 9, 13, 15, 13, 6, 0, 13, 4, 6, 15, 0, 7]
+    values = [15, 14, 19, 17, 27, 5, 28, 11, 19, 29, 6, 0, 29, 31, 15, 14, 28, 1, 8, 23, 2, 26, 28, 19, 13, 10, 28, 32, 2, 30, 21, 21]
     #values = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-    #bst = AVLTree(values, lambda x, y: x < y)
-    #bst.printStatistics()
-    #bst.printInorder()
-    #bst.checkAVL()
+    bst = AVLTree(values, lambda x, y: x < y)
+    bst.printStatistics()
+    bst.printInorder()
+    bst.checkAVL()
+    bst.remove(values[0])
+    bst.checkAVL()
 
+def testMultiple():
     MinPow = 6
     MaxPow = 16
     values = [utils.Random(0, 2**MaxPow) for x in xrange(2**MaxPow)]
@@ -379,10 +421,17 @@ if __name__=="__main__":
         range = values[0:2**bstSize]
         bst = AVLTree(range, lambda x, y: x < y)
         bst.printStatistics()
+        #bst.printInorder()
+        #print range
 
-#       permutation = utils.RandomPermutation(range)
-#       for delItem in permutation[0:len(permutation)-10]:
-#           bst.remove(delItem)
+        bst.remove(values[0])
+        #permutation = utils.RandomPermutation(range)
+        #for delItem in permutation[0:len(permutation)-10]:
+        #    bst.remove(delItem)
         bst.checkAVL()
-#        bst.printInorder()
+        #bst.printInorder()
+
+if __name__=="__main__":
+    #testSingle()
+    testMultiple()
 
