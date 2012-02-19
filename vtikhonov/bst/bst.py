@@ -30,6 +30,14 @@ class TreeElementHeightCollector:
         elif stage == 1:
             self.__max = max(self.__max, self.__current)
 
+            #child-parent consistency check
+            if item.Left != nil and item.Left.Parent != item:
+               print "Left child has different parent!"
+            if item.Right != nil and item.Right.Parent != item:
+               print "Right child has different parent!"
+            if item.Parent != nil and item.Parent.Left != item and item.Parent.Right != item:
+               print "Parent has not the item as a child!"
+
             # leaf node
             if (item.Left == nil or item.Right == nil):
                 self.__pathLenSum += self.__current
@@ -162,14 +170,21 @@ class BSTree:
             #nothing to do
             return
 
-        left, right = node.Left, node.Right
-        if left == self.__nil:
-            self.__transplant(node, right)
-        elif right == self.__nil:
-            self.__transplant(node, left)
+        yColor = node.Color
+        if node.Left == self.__nil:
+            x = node.Right
+            self.__transplant(node, x)
+        elif node.Right == self.__nil:
+            x = node.Left
+            self.__transplant(node, x)
         else:
             y = self.__findSuccessor(node)
-            if y.Parent != node:
+            x = y.Right
+            yColor = y.Color
+            if y.Parent == node:
+                #the line below forces child-parent consistency even if y.Right is sentinel 
+                x.Parent = y
+            else:
                 self.__transplant(y, y.Right)
                 y.Right = node.Right
                 y.Right.Parent = y
@@ -177,12 +192,17 @@ class BSTree:
             self.__transplant(node, y)
             y.Left = node.Left
             y.Left.Parent = y
+            y.Color = node.Color
+
+        if yColor == Color.Black:
+            self.__rbDeleteFixup(x)
 
 
     #printing content of the bst in sorted order
     def printInorder(self):
         print "<",
-        self.__inorderWalk(self.__root, self.__printItem)
+        for item in self.__inorderWalkGeneration(self.__root):
+            print item.Key,
         #printing newline
         print ">"
 
@@ -242,6 +262,54 @@ class BSTree:
                     self.__leftRotate(z.Parent.Parent)
 
         self.__root.Color = Color.Black
+
+    def __rbDeleteFixup(self, x):
+        while x != self.__root and x.Color == Color.Black:
+            if x == x.Parent.Left:
+                w = x.Parent.Right
+                if w.Color == Color.Red:
+                    w.Color = Color.Black
+                    x.Parent.Color = Color.Red
+                    self.__leftRotate(x.Parent)
+                    w = x.Parent.Right
+                if w == self.__nil:
+                    print "w is nil!!!"
+                if w.Left.Color == Color.Black and w.Right.Color == Color.Black:
+                    w.Color = Color.Red
+                    x = x.Parent
+                else:
+                    if w.Right.Color == Color.Black:
+                        w.Left.Color = Color.Black
+                        w.Color = Color.Red
+                        self.__rightRotate(w)
+                        w = x.Parent.Right
+                    w.Color = x.Parent.Color
+                    x.Parent.Color = Color.Black
+                    w.Right.Color = Color.Black
+                    self.__leftRotate(x.Parent)
+                    x = self.__root
+            else:
+                w = x.Parent.Left
+                if w.Color == Color.Red:
+                    w.Color = Color.Black
+                    x.Parent.Color = Color.Red
+                    self.__rightRotate(x.Parent)
+                    w = x.Parent.Left
+                if w.Right.Color == Color.Black and w.Left.Color == Color.Black:
+                    w.Color = Color.Red
+                    x = x.Parent
+                else:
+                    if w.Left.Color == Color.Black:
+                        w.Right.Color = Color.Black
+                        w.Color = Color.Red
+                        self.__leftRotate(w)
+                        w = x.Parent.Left
+                    w.Color = x.Parent.Color
+                    x.Parent.Color = Color.Black
+                    w.Left.Color = Color.Black
+                    self.__rightRotate(x.Parent)
+                    x = self.__root
+        x.Color = Color.Black
 
 
     # LEFT-ROTATE
@@ -326,8 +394,7 @@ class BSTree:
             uParent.Left = v
         else:
             uParent.Right = v
-        if v != self.__nil:
-            v.Parent = uParent
+        v.Parent = uParent
 
     # returns node corresponding to the key if it exists in the tree with root 
     def __search(self, root, key):
@@ -343,11 +410,6 @@ class BSTree:
             # further search in right subreee
             return self.__search(root.Right, key)
 
-    # just printing an item
-    def __printItem(self, item, stage, nil):
-        if stage == 1:
-            print item.Key,
-
 
     # inorder walk
     def __inorderWalk(self, root, command):
@@ -358,28 +420,35 @@ class BSTree:
             self.__inorderWalk(root.Right, command)
             command(root, 2, self.__nil)
 
+    # inorder walk for generators
+    def __inorderWalkGeneration(self, root):
+        if root != self.__nil:
+            for item in self.__inorderWalkGeneration(root.Left):
+                yield item
+            yield root
+            for item in self.__inorderWalkGeneration(root.Right):
+                yield item
 
 if __name__=="__main__":
-    #values = [3, 1, 8, 2, 6, 7, 5]
-#    values = [1, 1, 1, 1, 1, 1, 1, 1]       
-#    bst = BSTree(values, lambda x, y: x < y)
-#    bst.printStatistics()                   
-#    bst.printInorder()                      
-#    bst.checkRBT()                          
+#    values = [3, 1, 8, 2, 6, 7, 5]
+#   values = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+#   bst = BSTree(values, lambda x, y: x < y)
+#   bst.remove(9)
+#   bst.printStatistics()
+#   bst.printInorder()
+#   bst.checkRBT()
 
     MinPow = 6
-    MaxPow = 20
+    MaxPow = 12
     values = [utils.Random(0, 2**MaxPow) for x in xrange(2**MaxPow)]
     for bstSize in xrange(MinPow, MaxPow+1):
-        #values = [utils.Random(0, 1000) for x in xrange(2**bstSize)]
         range = values[0:2**bstSize]
         bst = BSTree(range, lambda x, y: x < y)
         bst.printStatistics()
-        bst.checkRBT()
-#
-#       permutation = utils.RandomPermutation(range)
-#       for delItem in permutation[0:len(permutation)-10]:
-#           bst.remove(delItem)
-#       bst.printInorder()
 
+        permutation = utils.RandomPermutation(range)
+        for delItem in permutation[0:len(permutation)-10]:
+            bst.remove(delItem)
+        bst.checkRBT()
+        bst.printInorder()
 
