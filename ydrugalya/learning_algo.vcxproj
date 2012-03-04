@@ -10,6 +10,34 @@
       <Platform>Win32</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\hash\hash_table.h" />
+    <ClInclude Include="src\search\binary_search.h" />
+    <ClInclude Include="src\search\lcs.h" />
+    <ClInclude Include="src\search\nth_element.h" />
+    <ClInclude Include="src\search\substring.h" />
+    <ClInclude Include="src\sort\counting_sort.h" />
+    <ClInclude Include="src\sort\heap_sort.h" />
+    <ClInclude Include="src\sort\insertion_sort.h" />
+    <ClInclude Include="src\sort\merge_sort.h" />
+    <ClInclude Include="src\sort\quick_sort.h" />
+    <ClInclude Include="src\sort\radix_sort.h" />
+    <ClInclude Include="src\trees\binary_tree.h" />
+    <ClInclude Include="src\trees\rb_tree.h" />
+    <ClInclude Include="src\utils\logic_shims.h" />
+    <ClInclude Include="src\utils\print_utils.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\learning_algo.cpp" />
+    <ClCompile Include="src\search\nth_element_demo.cpp" />
+    <ClCompile Include="src\tests\bst_demo.cpp" />
+    <ClCompile Include="src\tests\hash_table_demo.cpp" />
+    <ClCompile Include="src\tests\lcs_demo.cpp" />
+    <ClCompile Include="src\tests\nth_element_demo.cpp" />
+    <ClCompile Include="src\tests\rabin_karp_demo.cpp" />
+    <ClCompile Include="src\tests\radix_demo.cpp" />
+    <ClCompile Include="src\tests\rbt_demo.cpp" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{1AE33EB4-CFA0-4784-8405-CAA87570C610}</ProjectGuid>
     <RootNamespace>learning_algo</RootNamespace>
@@ -49,6 +77,7 @@
     <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
     <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />
     <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">c:\beatbox\Win32\boost-1.36.0\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -91,25 +120,6 @@
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClCompile Include="src\learning_algo.cpp" />
-    <ClCompile Include="src\tests\bst_demo.cpp" />
-    <ClCompile Include="src\tests\hash_table_demo.cpp" />
-    <ClCompile Include="src\tests\nth_element_demo.cpp" />
-    <ClCompile Include="src\tests\rabin_karp_demo.cpp" />
-    <ClCompile Include="src\tests\radix_demo.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="src\sort\counting_sort.h" />
-    <ClInclude Include="src\sort\heap_sort.h" />
-    <ClInclude Include="src\sort\insertion_sort.h" />
-    <ClInclude Include="src\sort\merge_sort.h" />
-    <ClInclude Include="src\sort\quick_sort.h" />
-    <ClInclude Include="src\search\binary_search.h" />
-    <ClInclude Include="src\trees\binary_tree.h" />
-    <ClInclude Include="src\utils\logic_shims.h" />
-    <ClInclude Include="src\utils\print_utils.h" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

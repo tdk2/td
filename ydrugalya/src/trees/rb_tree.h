@@ -1,34 +1,40 @@
 #include <boost/shared_ptr.hpp>
 #include "../utils/logic_shims.h"
+#include "./binary_tree.h"
 
 namespace al
 {
+    enum NODE_COLOR {RED, BLACK};
+
 	template <typename T>
-	class BinaryTree
+	class RBTree : BinaryTree<T>
 	{
 	public:
 
-	    class Node
+	    class RBNode 
 	    {
           public:
              typedef T node_data_type;
-             typedef boost::shared_ptr<Node> node_ptr_type;
+             typedef boost::shared_ptr<RBNode> node_ptr_type;
 
-		    protected:
+		    private:
 			    node_data_type m_data;
 			    node_ptr_type m_pParent;
 			    node_ptr_type m_pLeft;
 			    node_ptr_type m_pRight;
+                NODE_COLOR _color; 
 		    public:
-			    Node(const node_data_type data, 
-				     const node_ptr_type pParent, 
-				     const node_ptr_type pLeft, 
-				     const node_ptr_type pRight) :
+                
+			    RBNode(const node_data_type data, 
+				       const node_ptr_type pParent, 
+				       const node_ptr_type pLeft, 
+				       const node_ptr_type pRight          
+                     ) :
 				    m_pParent(parent),
 				    m_pLeft(pLeft),
 				    m_pRight(pRight) { }
 
-                Node(const node_data_type data) : m_data(data) { 
+                RBNode(const node_data_type data) : m_data(data) { 
                 }
 				
 			    T get_data() const { return m_data; }
@@ -41,13 +47,24 @@ namespace al
 
 			    node_ptr_type get_right() const { return m_pRight; }
 			    void set_right(node_ptr_type val) { m_pRight = val; }
+
+                NODE_COLOR get_color() const { return _color; }
+                void set_color(NODE_COLOR val) { _color = val; }
         };
 
-        typedef boost::shared_ptr<Node> node_ptr_type;
+        typedef boost::shared_ptr<RBNode> node_ptr_type;
+
+        node_ptr_type NULL_NODE;
+
+        RBTree() {
+            NULL_NODE.reset( new RBNode( T() ) );
+            NULL_NODE->set_color(BLACK);
+            m_pRoot = NULL_NODE;
+        }
 
         node_ptr_type get_root() {  return m_pRoot; }
 
-        node_ptr_type make_node(T t) { return node_ptr_type( new Node(t) ); }
+        node_ptr_type make_node(T t) { return node_ptr_type( new RBNode(t) ); }
 
         node_ptr_type tree_minimum(node_ptr_type node) {
             node_ptr_type current_node = node;
@@ -110,33 +127,106 @@ namespace al
           }
 
 
+          void insertFixup(node_ptr_type z) {
+
+              while(z->get_parent()->get_color() == RED) {
+
+                  node_ptr_type zp = z->get_parent();
+
+                  node_ptr_type zpp = zp->get_parent();
+
+                  if ( zp == zpp->get_left() ) { // if father is left child of it's grandfather 
+                      
+                      node_ptr_type zu = zpp->get_right(); // 'right' uncle
+
+                      if (zu->get_color() == RED) { // case 1. red uncle
+                        
+                        // we know that z.p.p is black. Otherwise prop 4 is violated in z.p.p
+                        // recolor z. parent and uncle into the black and z.p.p into the red
+                        zp->set_color(BLACK);
+                        zu->set_color(BLACK);
+                        zpp->set_color(RED);
+                        z = z->get_parent()->get_parent();
+
+                      } else {
+
+                          if ( z == zp->get_right() ) {  // case 2. z's uncle y is black and z is a right child
+                              z = zp;
+                              zp = z->get_parent();
+                              zpp = zp->get_parent();
+                              leftRotate(z);
+                          }
+
+                          // case 3: z's uncle is black is z is a left child
+                          zp->set_color(BLACK);
+                          zpp->set_color(RED);
+                          rightRotate(z);
+                      } 
+
+
+                  } else { // father is right child of it's grandfather. just change left and right
+
+                      node_ptr_type zu = zpp->get_left(); // 'left' uncle
+
+                      if (zu->get_color() == RED) { // case 1. red uncle
+
+                          // we know that z.p.p is black. Otherwise prop 4 is violated in z.p.p
+                          // recolor z. parent and uncle into the black and z.p.p into the red
+                          zp->set_color(BLACK);
+                          zu->set_color(BLACK);
+                          zpp->set_color(RED);
+                          z = zpp;
+                      } else {
+                          if ( z == zp->get_left() ) {  // case 2. z's uncle y is black and z is a right child
+                              z = zp;
+                              zp = z->get_parent();
+                              zpp = zp->get_parent();
+                              rightRotate(z);
+                          }
+
+                          // case 3: z's uncle is black is z is a left child
+                          zp->set_color(BLACK);
+                          zpp->set_color(RED);
+                          leftRotate(z);
+                      } 
+                  }
+              }
+
+              m_pRoot->set_color(BLACK);
+          }
+
+          bool isNull(node_ptr_type n) {
+              return n.get() == NULL_NODE.get();
+          }
+
           void insert(node_ptr_type node) {
          
-             node_ptr_type current_node = m_pRoot; // текущий узел
-             node_ptr_type parent_node = m_pRoot;  // указывает на родительский 
-                                                   // узел по отношению к проходимому узлу
-             while (current_node != NULL)    {
+             node_ptr_type current_node = m_pRoot; 
+             node_ptr_type parent_node = NULL_NODE;  // will point to parent node
+
+             while ( !isNull(current_node) )    {
                 parent_node = current_node;
-                // если данное во вставляемом узле меньше, сворачиваем в левую ветку
-                // иначе - в правую
                 if (node->get_data() < current_node->get_data()) {
                    current_node = current_node->get_left();
-                }
-                else {
+                } else {
                    current_node = current_node->get_right();
                 }
-               
              }
 
              node->set_parent(parent_node);
 
-             if ( isNull(parent_node) ) { // деверево пустое
+             if ( isNull(parent_node) ) { // empty tree
                 m_pRoot = node;
              } else if ( node->get_data() < parent_node->get_data() ) {
                 parent_node->set_left(node);
              } else {
                 parent_node->set_right(node);
              }
+
+             node->set_left(NULL_NODE);
+             node->set_right(NULL_NODE);
+             node->set_color(RED);
+             insertFixup(node);
         }
 
         void transplant(node_ptr_type u, node_ptr_type v) {
@@ -213,29 +303,29 @@ namespace al
         }
 
 
-        void deleteNode(node_ptr_type z) {
-
-            if ( isNull( z->get_left() ) ) { // case a
-                transplant( z, z->get_right() );
-            } else if ( isNull(z->get_right() ) ) { // case b
-                transplant( z, z->get_left() );
-            } else {
-                // find predecessor
-                node_ptr_type y = tree_minimum( z->get_right() );
-
-                // case d predecessor is right child of z
-                if ( y->get_parent() != z ) {
-                     transplant( y, y->get_right() );
-
-                     y->set_right( z->get_right() );
-                     y->get_right()->set_parent( y );
-                }
-
-                transplant( z, y );
-                y->set_left( z->get_left() );
-                y->get_left()->set_parent( y );
-            }
-        }
+//         void deleteNode(node_ptr_type z) {
+// 
+//             if ( isNull( z->get_left() ) ) { // case a
+//                 transplant( z, z->get_right() );
+//             } else if ( isNull(z->get_right() ) ) { // case b
+//                 transplant( z, z->get_left() );
+//             } else {
+//                 // find predecessor
+//                 node_ptr_type y = tree_minimum( z->get_right() );
+// 
+//                 // case d predecessor is right child of z
+//                 if ( y->get_parent() != z ) {
+//                      transplant( y, y->get_right() );
+// 
+//                      y->set_right( z->get_right() );
+//                      y->get_right()->set_parent( y );
+//                 }
+// 
+//                 transplant( z, y );
+//                 y->set_left( z->get_left() );
+//                 y->get_left()->set_parent( y );
+//             }
+//         }
 	private:
 		node_ptr_type m_pRoot;
 	};
