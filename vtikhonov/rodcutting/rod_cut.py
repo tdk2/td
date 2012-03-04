@@ -54,6 +54,12 @@ class RodCutting:
 if __name__=="__main__":
     rc = RodCutting()
     prices = [1, 5, 8, 9, 10, 17, 17, 20, 24, 30]
-    cuts, maxRevenue = rc.findOptimal(prices, 8)
+    cuts, maxRevenue = rc.findOptimal(prices, 9)
     print "optimal cuts: ", cuts, ", revenue: ", maxRevenue
+
+    # ex15.1-2
+    prices = [1, 5, 8, 9]
+    # greedy algorithm based on rod density would produce [3, 1], r:9
+    cuts, maxRevenue = rc.findOptimal(prices)
+    print "Exercise 15.1-2: optimal cuts: ", cuts, ", revenue: ", maxRevenue
 
