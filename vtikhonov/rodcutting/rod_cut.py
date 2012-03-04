@@ -10,8 +10,8 @@ class RodCutting:
    def findOptimal(self, prices, n = 0):
       if n == 0:
          n = len(prices)
-      #return ([], self.revenueBottomUp(prices, len(prices)))
-      return (self.revenueBottomUp(prices, n))
+      #return (self.revenueBottomUp(prices, n))
+      return (self.revenueMemoize(prices, n))
 
    # naive recursive implementation
    # n belongs to [1..len(prices)]
@@ -25,14 +25,22 @@ class RodCutting:
    # n belongs to [1..len(prices)]
    def revenueMemoize(self, prices, n):
       # revenues [0..n]
-      def revenueMemoizeAux(prices, n, revenues):
+      def revenueMemoizeAux(prices, n, revenues, firstCuts):
          if revenues[n] == None:
             # memoize it
-            revenues[n] = max([prices[i] + revenueMemoizeAux(prices, n-i-1, revenues) for i in xrange(n)])
+            rs = [(prices[i] + revenueMemoizeAux(prices, n-i-1, revenues, firstCuts), i+1) for i in xrange(n)]
+            revenues[n], firstCuts[n] = max(rs, key = lambda pair: pair[0])
          return revenues[n]
 
-      r = [None if i != 0 else 0 for i in xrange(n+1)]     
-      return revenueMemoizeAux(prices, n, r)
+      r = [None if i != 0 else 0 for i in xrange(n+1)]
+      s = [0 for i in xrange(n+1)]     
+      revenue = revenueMemoizeAux(prices, n, r, s)
+
+      cuts = []
+      while n > 0:
+         cuts.append(s[n])
+         n -= s[n]
+      return (cuts, revenue)
 
    # using bottom-up recursive algorithm
    # n belongs to [1..len(prices)]
