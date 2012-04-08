@@ -1,4 +1,3 @@
-#include "nth_element_demo.h"
 #include "nth_element.h"
 
 namespace al {
