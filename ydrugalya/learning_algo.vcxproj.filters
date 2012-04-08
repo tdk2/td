@@ -46,6 +46,9 @@
     <ClInclude Include="src\search\lcs.h">
       <Filter>search</Filter>
     </ClInclude>
+    <ClInclude Include="src\dp\knapsack.h">
+      <Filter>dp</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\tests\bst_demo.cpp">
@@ -73,6 +76,12 @@
     <ClCompile Include="src\tests\lcs_demo.cpp">
       <Filter>demo</Filter>
     </ClCompile>
+    <ClCompile Include="src\dp\knapsack.cpp">
+      <Filter>dp</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\knapsak_demo.cpp">
+      <Filter>demo</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="sort">
@@ -92,6 +101,9 @@
     </Filter>
     <Filter Include="demo">
       <UniqueIdentifier>{d0b7052d-696b-43a0-bf97-d8d2198b2c1b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="dp">
+      <UniqueIdentifier>{89d4520d-f837-4b72-b36a-1cbf675c1ae9}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>
