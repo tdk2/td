@@ -13,6 +13,7 @@ namespace al {
     void rbt_demo();
     void lcs_demo();
 	void knapsack_demo();
+	void huffman_demo();
 }
 int _tmain(int argc, _TCHAR* argv[])
 {
@@ -23,7 +24,8 @@ int _tmain(int argc, _TCHAR* argv[])
     // al::radix_demo();
     // al::rbt_demo();
     // al::lcs_demo();
-	al::knapsack_demo();
+	// al::knapsack_demo();
+	al::huffman_demo();
     return 0;
 }
 

@@ -49,6 +49,12 @@
     <ClInclude Include="src\dp\knapsack.h">
       <Filter>dp</Filter>
     </ClInclude>
+    <ClInclude Include="src\greedy\huffman.h">
+      <Filter>greedy</Filter>
+    </ClInclude>
+    <ClInclude Include="src\utils\bit_vector.h">
+      <Filter>utils</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\tests\bst_demo.cpp">
@@ -82,6 +88,12 @@
     <ClCompile Include="src\tests\knapsak_demo.cpp">
       <Filter>demo</Filter>
     </ClCompile>
+    <ClCompile Include="src\greedy\huffman.cpp">
+      <Filter>greedy</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\huffman_demo.cpp">
+      <Filter>demo</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="sort">
@@ -104,6 +116,9 @@
     </Filter>
     <Filter Include="dp">
       <UniqueIdentifier>{89d4520d-f837-4b72-b36a-1cbf675c1ae9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="greedy">
+      <UniqueIdentifier>{c8963305-7139-4621-827f-4ef92efebceb}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

@@ -35,3 +35,16 @@ bool isEmpty(char const* pString)
 {
    return (0 == pString) || (0 == std::strlen(pString));
 }
+
+
+//! Check presence of the bit in the value using bit mask. For example isBitSet(10100101b, 00100000b)
+template< typename BITS_T, typename BIT_MASK_TYPE >
+inline bool isBitSetByMask( BITS_T val, BIT_MASK_TYPE bitMask ) {
+    return static_cast<BIT_MASK_TYPE>( val & bitMask ) == bitMask ;
+}
+
+//! Check presence of the bit in the value using bit number. For example isBitSet( 10100101b, 5 )
+template< typename BITS_T, typename BIT_NUMBER_TYPE >
+inline bool isBitSetByNo( BITS_T val, BIT_NUMBER_TYPE bitNumber ) {
+    return isBitSetByMask(val, 1 << bitNumber );
+}

@@ -20,6 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\dp\knapsack.h" />
+    <ClInclude Include="src\greedy\huffman.h" />
     <ClInclude Include="src\hash\hash_table.h" />
     <ClInclude Include="src\search\binary_search.h" />
     <ClInclude Include="src\search\lcs.h" />
@@ -33,15 +34,18 @@
     <ClInclude Include="src\sort\radix_sort.h" />
     <ClInclude Include="src\trees\binary_tree.h" />
     <ClInclude Include="src\trees\rb_tree.h" />
+    <ClInclude Include="src\utils\bit_vector.h" />
     <ClInclude Include="src\utils\logic_shims.h" />
     <ClInclude Include="src\utils\print_utils.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\dp\knapsack.cpp" />
+    <ClCompile Include="src\greedy\huffman.cpp" />
     <ClCompile Include="src\learning_algo.cpp" />
     <ClCompile Include="src\search\nth_element_demo.cpp" />
     <ClCompile Include="src\tests\bst_demo.cpp" />
     <ClCompile Include="src\tests\hash_table_demo.cpp" />
+    <ClCompile Include="src\tests\huffman_demo.cpp" />
     <ClCompile Include="src\tests\knapsak_demo.cpp" />
     <ClCompile Include="src\tests\lcs_demo.cpp" />
     <ClCompile Include="src\tests\nth_element_demo.cpp" />

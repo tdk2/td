@@ -1,3 +1,4 @@
+#pragma once
 #include <boost/shared_ptr.hpp>
 #include "../utils/logic_shims.h"
 
@@ -32,6 +33,7 @@ namespace al
                 }
 				
 			    T get_data() const { return m_data; }
+				void set_data(const node_data_type& data ) { m_data = data; }
 
 			    node_ptr_type get_parent() const { return m_pParent; }
 			    void set_parent(node_ptr_type val) { m_pParent = val; }
