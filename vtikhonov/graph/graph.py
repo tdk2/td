@@ -81,9 +81,11 @@ def countPaths(dag, nodeFrom, nodeTo):
     index = 0
     for node in dag.nodes:
         node.pathcount = 0
+        node.paths = []
         if node.name == nodeFrom:
             fromIndex = index
             node.pathcount = 1
+            node.paths.append(node.name + "->")
         elif node.name == nodeTo:
             toIndex = index
         index = index+1
@@ -96,4 +98,7 @@ def countPaths(dag, nodeFrom, nodeTo):
     for node in dag.nodes[fromIndex:toIndex]:
         for adjNode in node.adj:
             adjNode.pathcount = adjNode.pathcount + node.pathcount
+            for path in node.paths:
+                adjNode.paths.append(path + adjNode.name + "->")
+    print dag.nodes[toIndex].paths
     return dag.nodes[toIndex].pathcount
