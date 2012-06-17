@@ -26,6 +26,7 @@ class DiGraph:
         #to[1].append(fr)
 
     def printGraph(self):
+        print "[%s]" % str(self.name)
         for node in self.nodes:
             print node.name, ": ",
             for adj in node.adj:
@@ -69,3 +70,30 @@ def sortTopologically(dag):
     DFS(dag, onFinishedCallback)
     dag.nodes = sortedNodes
 
+
+def countPaths(dag, nodeFrom, nodeTo):
+    if nodeFrom == nodeTo:
+        return 1
+
+    sortTopologically(dag)
+    fromIndex = -1
+    toIndex = -1
+    index = 0
+    for node in dag.nodes:
+        node.pathcount = 0
+        if node.name == nodeFrom:
+            fromIndex = index
+            node.pathcount = 1
+        elif node.name == nodeTo:
+            toIndex = index
+        index = index+1
+    if fromIndex == -1 or toIndex == -1:
+        print "At least one of the nodes wasn't found in the graph specified"
+        return 0
+    if fromIndex > toIndex:
+        print "%s is topologically greater than %s" % (str(nodeFrom), str(nodeTo))
+        return 0
+    for node in dag.nodes[fromIndex:toIndex]:
+        for adjNode in node.adj:
+            adjNode.pathcount = adjNode.pathcount + node.pathcount
+    return dag.nodes[toIndex].pathcount
