@@ -13,9 +13,11 @@ class DFS:
    def __init__(self, gr):
       self.graph = gr
 
-   def run(self, onFinished):
-      self.onFinished = onFinished
+   def run(self, onNodeFinished, onArticulationNode):
+      self.onNodeFinished = onNodeFinished
+      self.onArticulationPoint = onArticulationNode
       self.counter = 0
+
       for node in self.graph.nodes:
          node.color = Color.White 
 
@@ -30,26 +32,37 @@ class DFS:
       node.backLow = node.discovered
       node.color = Color.Gray
       low = len(self.graph.nodes)*1000 + 1000
+      childNumber = 0
       for adjNode in node.adj:
          if adjNode.color == Color.White:
             #print "tree edge [%s - %s]" % (node.name, adjNode.name)
             self.visit(adjNode)
             low = min(low, adjNode.low, adjNode.backLow)
+            childNumber = childNumber + 1
          elif adjNode.color == Color.Gray:
             node.backLow = min(node.backLow, adjNode.discovered)
+
+      if (node == self.graph.nodes[0]):
+         # check if the root node is articulation point based on 22-2.a
+         if childNumber > 1:
+            self.onArticulationPoint(node)
+      else:
+         #22-2.b 
+         pass
+
       node.color = Color.Black
       self.counter = self.counter + 1
       node.finished = self.counter
       node.low = min(node.discovered, low)
-      self.onFinished(node)
+      self.onNodeFinished(node)
 
 
 
 def sortTopologically(dag):
     sortedNodes = []
-    onFinishedCallback = lambda node: sortedNodes.insert(0, node)
+    onNodeFinishedCallback = lambda node: sortedNodes.insert(0, node)
     dfs = DFS(dag)
-    dfs.run(onFinishedCallback)
+    dfs.run(onNodeFinishedCallback)
     dag.nodes = sortedNodes
 
 
@@ -57,7 +70,7 @@ def countPaths(dag, nodeFrom, nodeTo):
     if nodeFrom == nodeTo:
         return 1
 
-    sortTopologically(dag)
+def sortTopologically(dag):
     fromIndex = -1
     toIndex = -1
     index = 0
@@ -87,13 +100,17 @@ def countPaths(dag, nodeFrom, nodeTo):
 
 
 def printNode(node):
-    print "%s: %d/%d/%d" % (node.name, node.discovered, node.finished, node.low)
+    pass
+    #print "%s: %d/%d/%d" % (node.name, node.discovered, node.finished, node.low)
+
+def printArticulationNode(node):
+    print "AP: %s" % node.name
 
 def findArticulationPoints(gr):
    if gr.__class__ != graph.UDGraph:
       raise Exception('Incompatible graph class')
-   #onFinishedCallback = lambda node: print(node.name)
+   #onNodeFinishedCallback = lambda node: print(node.name)
    dfs = DFS(gr)
-   dfs.run(printNode)
+   dfs.run(printNode, printArticulationNode)
 
 
