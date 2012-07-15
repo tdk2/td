@@ -83,7 +83,6 @@ def testArticulationPoints():
    gr.addEdge("20", "24")
    gr.addEdge("22", "23")
    algorithm.findArticulationPoints(gr)
-   #gr.printGraph()
 
 if __name__=="__main__":
    #testTopologicalSort()

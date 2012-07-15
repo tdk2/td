@@ -33,12 +33,15 @@ class DFS:
       node.color = Color.Gray
       low = len(self.graph.nodes)*1000 + 1000
       childNumber = 0
+      foundArticulationPoint = False
       for adjNode in node.adj:
          if adjNode.color == Color.White:
             #print "tree edge [%s - %s]" % (node.name, adjNode.name)
             self.visit(adjNode)
             low = min(low, adjNode.low, adjNode.backLow)
             childNumber = childNumber + 1
+            if min(adjNode.low, adjNode.backLow) >= node.discovered:
+               foundArticulationPoint = True
          elif adjNode.color == Color.Gray:
             node.backLow = min(node.backLow, adjNode.discovered)
 
@@ -46,9 +49,9 @@ class DFS:
          # check if the root node is articulation point based on 22-2.a
          if childNumber > 1:
             self.onArticulationPoint(node)
-      else:
+      elif foundArticulationPoint:
          #22-2.b 
-         pass
+         self.onArticulationPoint(node)
 
       node.color = Color.Black
       self.counter = self.counter + 1
